@@ -1,6 +1,20 @@
 #include "abb.h"
 #include <stdlib.h>
 
+typedef struct abb_nodo {
+    struct abb_nodo* der;
+    struct abb_nodo* izq;
+    char* clave;
+    void* dato; 
+} abb_nodo_t;
+
+struct abb {
+    abb_nodo_t* raiz;
+    abb_comparar_clave_t* cmp;
+    abb_destruir_dato_t* destruir_dato;
+    size_t cantidad;
+};
+
 /* ******************************************************************
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
@@ -10,10 +24,17 @@
  *                       PRIMITIVAS DEL ABB
  * *****************************************************************/
 
-/*
 abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato) {
-
+    abb_t* arbol = malloc(sizeof(abb_t));
+    if (!arbol) return NULL;
+    arbol->cmp = cmp;
+    arbol->destruir_dato = destruir_dato;
+    arbol->raiz = NULL;
+    arbol->cantidad = 0;
+    return arbol; 
 }
+
+/*
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
 
