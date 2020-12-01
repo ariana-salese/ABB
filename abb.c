@@ -61,9 +61,9 @@ void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nod
         else nodo_act->izq = nodo_nuevo;
         return;
     }
-    if (cmp(nodo_act->clave, nodo_nuevo->clave) > 0) ubicar_nodo(cmp, nodo_act, nodo_act->izq, nodo_nuevo);//acual > ant 
-    else if (cmp(nodo_act->clave, nodo_nuevo->clave) < 0) ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //actual < ant
-    else { //act == ant
+    if (cmp(nodo_act->clave, nodo_nuevo->clave) > 0) ubicar_nodo(cmp, nodo_act, nodo_act->izq, nodo_nuevo);//acual > nueva
+    else if (cmp(nodo_act->clave, nodo_nuevo->clave) < 0) ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //actual < nueva
+    else { //act == nueva
         nodo_act->dato = nodo_nuevo->dato;
         return;
     }
