@@ -39,10 +39,13 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato) {
 
 abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     abb_nodo_t* abb_nodo = malloc(sizeof(abb_nodo_t));
-    if (abb_nodo) return NULL;
+    if (!abb_nodo) return NULL;
 
     char* copia_clave = strdup(clave);
-    if(!copia_clave) return NULL;
+    if(!copia_clave) {
+        free(abb_nodo);
+        return NULL;
+    }
 
     abb_nodo->clave = copia_clave;
     abb_nodo->dato = dato;
