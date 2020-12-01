@@ -15,16 +15,6 @@ struct abb {
     size_t cantidad;
 };
 
-abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato) {
-    abb_t* arbol = malloc(sizeof(abb_t));
-    if (!arbol) return NULL;
-    arbol->cmp = cmp;
-    arbol->destruir_dato = destruir_dato;
-    arbol->raiz = NULL;
-    arbol->cantidad = 0;
-    return arbol; 
-}
-
 /* ******************************************************************
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
