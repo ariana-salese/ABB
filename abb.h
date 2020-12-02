@@ -18,6 +18,9 @@ typedef void (*abb_destruir_dato_t) (void *);
  *                       PRIMITIVAS DEL ABB
  * *****************************************************************/
 
+void imprimir_abb(abb_t *arbol);
+size_t abb_altura(const abb_t* abb);
+
 //Crea un abb.
 //Post: devuelve un abb.
 abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato);
