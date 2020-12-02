@@ -173,6 +173,9 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
                 buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
                 nodo_act->clave = reemplazo->clave;
                 nodo_act->dato = reemplazo->dato;
+		
+		free(reemplazo); //esto lo agregue desde github espero no romper nada 
+		
                 return nodo_a_devolver;
             }
         }
