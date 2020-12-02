@@ -24,7 +24,7 @@ struct abb {
  *                 IMPRIMIR ARBOL (BORRAR AL FINAL)
  * *****************************************************************/
 
-size_t _abb_altura(abb_nodo_t *nodo, size_t altura){ //Es para saber hasta donde imprimir
+size_t _abb_altura(abb_nodo_t *nodo, size_t altura) { //Es para saber hasta donde imprimir
 
     if(!nodo) return altura;
     
@@ -38,8 +38,7 @@ size_t abb_altura(const abb_t* abb) {
     return _abb_altura(abb->raiz,0);
 }
 
-int _print_t(abb_nodo_t *nodo, int is_izq, int offset, int depth, char s[20][255])
-{
+int _print_t(abb_nodo_t *nodo, int is_izq, int offset, int depth, char s[20][255]) {
     char b[20];
     int width = 5;
 
@@ -93,8 +92,7 @@ int _print_t(abb_nodo_t *nodo, int is_izq, int offset, int depth, char s[20][255
     return izq + width + der;
 }
 
-void print_t(abb_nodo_t *nodo)
-{
+void print_t(abb_nodo_t *nodo) {
     char s[20][255];
     for (int i = 0; i < _abb_altura(nodo,0) + 2; i++)
         sprintf(s[i], "%80s", " ");
@@ -105,7 +103,7 @@ void print_t(abb_nodo_t *nodo)
         printf("%s\n", s[i]);
 }
 
-void imprimir_abb(abb_t *arbol){
+void imprimir_abb(abb_t *arbol) {
 	print_t(arbol->raiz);
 }
 
@@ -152,19 +150,19 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
 void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
     if (!nodo_act) {
     	//printf("Ultimo paso\n");
-        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0){//si la clave nueva es mayor a la anterior
+        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) { //si la clave nueva es mayor a la anterior
         	nodo_ant->der = nodo_nuevo;
         } 
-        else{
+        else {
         	nodo_ant->izq = nodo_nuevo;
         } 
         return;
     }
-    if (cmp(nodo_act->clave, nodo_nuevo->clave) > 0){
+    if (cmp(nodo_act->clave, nodo_nuevo->clave) > 0) {
     	//printf("la clave nueva es menor que la clave actual\n");
     	ubicar_nodo(cmp, nodo_act, nodo_act->izq, nodo_nuevo);//acual > nueva
     } 
-    else if (cmp(nodo_act->clave, nodo_nuevo->clave) < 0){
+    else if (cmp(nodo_act->clave, nodo_nuevo->clave) < 0) {
     	//printf("la clave nueva es mayor que la clave actual\n");
     	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //actual < nueva
     } 
