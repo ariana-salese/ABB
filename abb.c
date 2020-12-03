@@ -7,12 +7,12 @@
 
 #define COMPACT //Para imprimir, se puede sacar
 
-struct abb_nodo {
+typedef struct abb_nodo {
     struct abb_nodo* der;
     struct abb_nodo* izq;
     char* clave;
     void* dato; 
-};
+} abb_nodo_t;
 
 struct abb {
     abb_nodo_t* raiz;
@@ -129,60 +129,16 @@ size_t contar_hijos(abb_nodo_t* nodo) {
 
 abb_nodo_t* buscar_hijo_unico(abb_nodo_t* nodo) {
     if (nodo->der) return nodo->der;
-    return nodo->izq;
+    if (nodo->izq) return nodo->izq;
+    return NULL;
 }
 
 abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
     abb_nodo_t* nodo_act = nodo->der;
-    while (nodo_act->izq) {
-        nodo_act = nodo_act->izq;
-    }
+
+    while (nodo_act->izq) nodo_act = nodo_act->izq;
+    
     return nodo_act;
-}
-
-abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo_t* nodo_ant, const char* clave, accion_t borrar) {
-    if (!nodo_act) return NULL;
-
-    int resultado_cmp_act = cmp(nodo_act->clave, clave);
-
-    if (resultado_cmp_act == 0) {
-        if (borrar) {
-            int resultado_cmp_ant = 0;
-            if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
-            //printf("cuento hijos\n");
-            size_t cant_hijos = contar_hijos(nodo_act);
-            //printf("termine de contar hijos\n");
-            if (cant_hijos == CERO_HIJOS) {
-                //printf("no tiene hijos\n");
-                if (resultado_cmp_ant > 0) nodo_ant->der = NULL;
-                else nodo_ant->izq = NULL;
-            }
-            else if (cant_hijos == UN_HIJO) {
-                //printf("tiene solo un hijo\n");
-                abb_nodo_t* unico_hijo = buscar_hijo_unico(nodo_act);
-                if (resultado_cmp_ant > 0) nodo_ant->der = unico_hijo;
-                else nodo_ant->izq = unico_hijo;
-            }
-            else if (cant_hijos == DOS_HIJOS) {
-                //printf("tiene dos hijos\n");
-                abb_nodo_t* reemplazo = buscar_reemplazo(nodo_act);
-                abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
-                if (!nodo_a_devolver) return NULL;
-
-                //printf("la clave del reemplazo es: %s\n", reemplazo->clave);
-                buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
-                nodo_act->clave = reemplazo->clave;
-                nodo_act->dato = reemplazo->dato;
-		
-		free(reemplazo); //esto lo agregue desde github espero no romper nada 
-		
-                return nodo_a_devolver;
-            }
-        }
-        return nodo_act;
-    }
-    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
-    return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
 }
 
 /* ******************************************************************
@@ -206,7 +162,7 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     if (!abb_nodo) return NULL;
 
     char* copia_clave = strdup(clave);
-    if(!copia_clave) {
+    if (!copia_clave) {
         free(abb_nodo);
         return NULL;
     }
@@ -217,6 +173,44 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     abb_nodo->izq = NULL;
 
     return abb_nodo;
+}
+
+abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo_t* nodo_ant, const char* clave, accion_t borrar) {
+    if (!nodo_act) return NULL;
+
+    int resultado_cmp_act = cmp(nodo_act->clave, clave);
+
+    if (resultado_cmp_act == 0) {
+        if (!borrar) return nodo_act;
+
+        int resultado_cmp_ant = 0;
+        if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
+        size_t cant_hijos = contar_hijos(nodo_act);
+        abb_nodo_t* reemplazo = NULL;
+
+        if (cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) {
+            reemplazo = buscar_hijo_unico(nodo_act); //si se te ocurre un nombre mas representativo mejor, no se me ocurre uno que no sea eterno
+            
+            if (resultado_cmp_ant > 0) nodo_ant->der = reemplazo;
+            else nodo_ant->izq = reemplazo;
+
+            return nodo_act;
+        }
+
+        reemplazo = buscar_reemplazo(nodo_act);
+        abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
+        if (!nodo_a_devolver) return NULL;
+                
+        buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
+        nodo_act->clave = reemplazo->clave;
+        nodo_act->dato = reemplazo->dato;
+		
+		free(reemplazo);
+		
+        return nodo_a_devolver;
+    }
+    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
+    return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
 }
 
 void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
@@ -235,7 +229,7 @@ void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nod
     // printf("CMP devuelve: %i\n", cmp(nodo_nuevo->clave, nodo_act->clave));
     if (resultado_cmp > 0) {
     	//printf("la clave nueva es mayor que la clave actual\n");
-    	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //acual > nueva
+    	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //acutal > nueva
     } 
     else if (resultado_cmp < 0) {
     	//printf("la clave nueva es menor que la clave actual\n");

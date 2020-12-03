@@ -10,7 +10,6 @@
 
 typedef struct abb abb_t;
 typedef struct abb_iter abb_iter_t;
-typedef struct abb_nodo abb_nodo_t;
 
 typedef int (*abb_comparar_clave_t) (const char *, const char *);
 typedef void (*abb_destruir_dato_t) (void *);
@@ -26,9 +25,6 @@ size_t abb_altura(const abb_t* abb);
 //Crea un abb.
 //Post: devuelve un abb.
 abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato);
-
-//DOCUMENTACION !!!!!!!
-abb_nodo_t* abb_nodo_crear(const char* clave, void* dato);
 
 //Guarda un elemento en el arbol, si la clave ya se encuentra en la
 //estructura, la reemplaza. De no poder guardarlo devuelve false.
