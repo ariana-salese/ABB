@@ -54,6 +54,7 @@ void prueba_internas_ari() {
 }
 
 void prueba_buscar_nodo() {
+	printf("PRUEBAS BUSCAR NODO\n");
 	abb_t* abb = abb_crear(mi_cmp, NULL);
 
 	char* claves[] = {"9","7","1","16","17"};
@@ -90,6 +91,7 @@ void prueba_buscar_nodo() {
 }
 
 void pruebas_borrar() {
+	printf("PRUEBAS BORRAR NODO\n");
 	abb_t* abb = abb_crear(mi_cmp, NULL);
 
 	char* claves[] = {"9","7","1","16","17"};

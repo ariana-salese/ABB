@@ -179,38 +179,40 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
     if (!nodo_act) return NULL;
 
     int resultado_cmp_act = cmp(nodo_act->clave, clave);
-
-    if (resultado_cmp_act == 0) {
-        if (!borrar) return nodo_act;
-
-        int resultado_cmp_ant = 0;
-        if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
-        size_t cant_hijos = contar_hijos(nodo_act);
-        abb_nodo_t* reemplazo = NULL;
-
-        if (cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) {
-            reemplazo = buscar_hijo_unico(nodo_act); //si se te ocurre un nombre mas representativo mejor, no se me ocurre uno que no sea eterno
-            
-            if (resultado_cmp_ant > 0) nodo_ant->der = reemplazo;
-            else nodo_ant->izq = reemplazo;
-
-            return nodo_act;
-        }
-
-        reemplazo = buscar_reemplazo(nodo_act);
-        abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
-        if (!nodo_a_devolver) return NULL;
-                
-        buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
-        nodo_act->clave = reemplazo->clave;
-        nodo_act->dato = reemplazo->dato;
-		
-		free(reemplazo);
-		
-        return nodo_a_devolver;
+   
+    if (resultado_cmp_act > 0) {
+        return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
+    } else if (resultado_cmp_act < 0) {
+        return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
     }
-    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
-    return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
+
+    if (!borrar) return nodo_act;
+
+    int resultado_cmp_ant = 0;
+    if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
+    size_t cant_hijos = contar_hijos(nodo_act);
+    abb_nodo_t* reemplazo = NULL;
+
+    if (cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) {
+        reemplazo = buscar_hijo_unico(nodo_act); //si se te ocurre un nombre mas representativo mejor, no se me ocurre uno que no sea eterno
+            
+        if (resultado_cmp_ant > 0) nodo_ant->der = reemplazo;
+        else nodo_ant->izq = reemplazo;
+
+        return nodo_act;
+    }
+
+    reemplazo = buscar_reemplazo(nodo_act);
+    abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
+    if (!nodo_a_devolver) return NULL;
+                
+    buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
+    nodo_act->clave = reemplazo->clave;
+    nodo_act->dato = reemplazo->dato;
+	
+	free(reemplazo);
+		
+    return nodo_a_devolver;
 }
 
 void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
