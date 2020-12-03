@@ -216,9 +216,10 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
     if (!nodo_a_devolver) return NULL;
                 
     buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
+    
+    free(nodo_act->clave);
     nodo_act->clave = reemplazo->clave;
     nodo_act->dato = reemplazo->dato;
-
     free(reemplazo);
 		
     return nodo_a_devolver;

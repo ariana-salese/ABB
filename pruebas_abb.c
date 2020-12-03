@@ -63,13 +63,14 @@ void prueba_buscar_nodo() {
 	abb_t* abb = abb_crear(strcmp, NULL);
 
 	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48"};
-	char* claves_no_abb[] = {"10", "45", "90", "0", "89"};
+	char* claves_no_abb[] = {"10", "45", "90", "0", "89", "2", "1", "0", "67890","899", "343", "1231", "44", "2321"};
 	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48};
 	size_t cant = 14;
 
 	for(int i = 0; i < cant; i++){
 		abb_guardar(abb, claves[i], &datos[i]);
 	}
+	imprimir_abb(abb);
 
 	print_test("Obtener raiz", *(int*)abb_obtener(abb,  claves[0]) == datos[0]);
 
@@ -128,7 +129,7 @@ void pruebas_borrar() {
 	print_test("El elemento borrado ya no pertenece al árbol", !abb_pertenece(abb,claves[9]));
 	imprimir_abb(abb);
 	
-	printf("borro el 34\n");//Pierde memoria en este "borrar"
+	printf("borro el 34\n");
 	print_test("El elemento pertenece al árbol", abb_pertenece(abb,claves[1]));
 	print_test("Borrar con dos hijos", *(int*)abb_borrar(abb, claves[1]) == datos[1]);
 	cant--;
