@@ -13,7 +13,8 @@
  *                 NUESTRAS PRUEBAS (ELIMINAR)
  * *****************************************************************/
 
-int mi_cmp (const char* a, const char* b) {
+//No debería hacer falta, hay que arreglar eso de que no te anda strcmp
+int mi_cmp (const char* a, const char* b) { 
 	int _a = atoi(a);
 	int _b = atoi(b);
 	
@@ -53,19 +54,22 @@ void prueba_internas_ari() {
 	}
 }
 
-void prueba_buscar_nodo() {
-	printf("PRUEBAS BUSCAR NODO\n");
-	abb_t* abb = abb_crear(mi_cmp, NULL);
+/* ******************************************************************
+ *                      PRUEBAS PRIMITIVAS ABB
+ * *****************************************************************/
 
-	char* claves[] = {"9","7","1","16","17"};
-	char* claves_no_abb[] = {"10", "45", "90","0", "89"};
-	int datos[] = {9,7,1,16,17};
-	size_t cant = 5;
+void prueba_buscar_nodo() {
+	printf("\nPRUEBAS BUSCAR NODO\n");
+	abb_t* abb = abb_crear(strcmp, NULL);
+
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48"};
+	char* claves_no_abb[] = {"10", "45", "90", "0", "89"};
+	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48};
+	size_t cant = 14;
 
 	for(int i = 0; i < cant; i++){
 		abb_guardar(abb, claves[i], &datos[i]);
 	}
-	imprimir_abb(abb);
 
 	print_test("Obtener raiz", *(int*)abb_obtener(abb,  claves[0]) == datos[0]);
 
@@ -80,24 +84,26 @@ void prueba_buscar_nodo() {
 	for (int i = 0; i < cant && resultado_obtener; i++) {
 		if (!abb_pertenece(abb,  claves[i])) resultado_obtener = false;
 	}
-	print_test("Resultado pertenece claves q perteneces", resultado_pertenece);
+	print_test("Pertenece da true para todos los elementos", resultado_pertenece);
 
 	//claves que no pertenen al abb
 	resultado_pertenece = true;
 	for (int i = 0; i < cant && resultado_obtener; i++) {
 		if (abb_pertenece(abb,  claves_no_abb[i])) resultado_obtener = false;
 	}
-	print_test("Resultado no perteneces al abb", resultado_pertenece);
+	print_test("Pertenece da false para elementos que no estan en el ABB", resultado_pertenece);
+
+	abb_destruir(abb);
 }
 
 void pruebas_borrar() {
-	printf("PRUEBAS BORRAR NODO\n");
-	abb_t* abb = abb_crear(mi_cmp, NULL);
+	printf("\nPRUEBAS BORRAR NODO\n");
+	abb_t* abb = abb_crear(strcmp, NULL);
 
-	char* claves[] = {"9","7","1","16","17"};
-	//char* claves_no_abb[] = {"10", "45", "90","0", "89"};
-	int datos[] = {9,7,1,16,17};
-	size_t cant = 5;
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48"};
+	//char* claves_no_abb[] = {"10", "45", "90", "0", "89"};
+	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48};
+	size_t cant = 14;
 
 	for(int i = 0; i < cant; i++){
 		abb_guardar(abb, claves[i], &datos[i]);
@@ -105,32 +111,45 @@ void pruebas_borrar() {
 	imprimir_abb(abb);
 
 	print_test("La cantidad de elementos es correcta", abb_cantidad(abb) == cant);
-
-	printf("borro el 17\n");
-	print_test("Borrar hoja", *(int*)abb_borrar(abb, "17") == 17);
+	
+	printf("borro el 22\n");
+	print_test("El elemento pertenece al árbol", abb_pertenece(abb,claves[12]));
+	print_test("Borrar hoja", *(int*)abb_borrar(abb, claves[12]) == datos[12]);
 	cant--;
 	print_test("La cantidad de elementos es correcta", abb_cantidad(abb) == cant);
+	print_test("El elemento borrado ya no pertenece al árbol", !abb_pertenece(abb,claves[12]));
 	imprimir_abb(abb);
 
-	printf("borro el 7\n");
-	print_test("Borrar con un hijo", *(int*)abb_borrar(abb, "7") == 7);
+	printf("borro el 55\n");
+	print_test("El elemento pertenece al árbol", abb_pertenece(abb,claves[9]));
+	print_test("Borrar con un hijo", *(int*)abb_borrar(abb, claves[9]) == datos[9]);
 	cant--;
 	print_test("La cantidad de elementos es correcta", abb_cantidad(abb) == cant);
+	print_test("El elemento borrado ya no pertenece al árbol", !abb_pertenece(abb,claves[9]));
 	imprimir_abb(abb);
+	
+	printf("borro el 34\n");//Pierde memoria en este "borrar"
+	print_test("El elemento pertenece al árbol", abb_pertenece(abb,claves[1]));
+	print_test("Borrar con dos hijos", *(int*)abb_borrar(abb, claves[1]) == datos[1]);
+	cant--;
+	print_test("La cantidad de elementos es correcta", abb_cantidad(abb) == cant);
+	print_test("El elemento borrado ya no pertenece al árbol", !abb_pertenece(abb,claves[1]));
+	imprimir_abb(abb);
+	
+	abb_destruir(abb);
+}
 
-	printf("borro el 9\n");
-	print_test("Borrar con dos hijos/raiz", *(int*)abb_borrar(abb, "9") == 9);
-	cant--;
-	print_test("La cantidad de elementos es correcta", abb_cantidad(abb) == cant);
-	imprimir_abb(abb);
+void pruebas_primitivas_abb(){
+	prueba_buscar_nodo();
+	pruebas_borrar();
 }
 
 void pruebas_abb_estudiante() {
 	//nuestras pruebas (ELIMINAR)
-    pruebas_internas();
-	prueba_internas_ari();
-	prueba_buscar_nodo();
-	pruebas_borrar();
+    //pruebas_internas();
+	//prueba_internas_ari();
+
+	pruebas_primitivas_abb();
 
 	//pruebas primitivas abb
 

@@ -141,6 +141,18 @@ abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
     return nodo_act;
 }
 
+void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no me equivoco
+	
+	if(!nodo) return;
+
+	_abb_destruir(nodo->izq, destruir_dato, arbol);
+	_abb_destruir(nodo->der, destruir_dato, arbol);
+
+	if(destruir_dato) destruir_dato(nodo->dato);
+	free(nodo->clave);
+	free(nodo);
+}
+
 /* ******************************************************************
  *                       PRIMITIVAS DEL ABB
  * *****************************************************************/
@@ -180,12 +192,9 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
 
     int resultado_cmp_act = cmp(nodo_act->clave, clave);
    
-    if (resultado_cmp_act > 0) {
-        return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
-    } else if (resultado_cmp_act < 0) {
-        return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
-    }
-
+    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
+    else if (resultado_cmp_act < 0) return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
+    
     if (!borrar) return nodo_act;
 
     int resultado_cmp_ant = 0;
@@ -209,26 +218,20 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
     buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
     nodo_act->clave = reemplazo->clave;
     nodo_act->dato = reemplazo->dato;
-	
-	free(reemplazo);
+
+    free(reemplazo);
 		
     return nodo_a_devolver;
 }
 
 void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
     if (!nodo_act) {
-    	//printf("Ultimo paso\n");
-        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) { //si la clave nueva es mayor a la anterior
-        	nodo_ant->der = nodo_nuevo;
-        } 
-        else {
-        	nodo_ant->izq = nodo_nuevo;
-        } 
+        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) nodo_ant->der = nodo_nuevo;      
+        else nodo_ant->izq = nodo_nuevo;
         return;
     }
     int resultado_cmp = cmp(nodo_nuevo->clave, nodo_act->clave);
     // printf("La clave actual es: %s\n", nodo_act->clave);
-    // printf("CMP devuelve: %i\n", cmp(nodo_nuevo->clave, nodo_act->clave));
     if (resultado_cmp > 0) {
     	//printf("la clave nueva es mayor que la clave actual\n");
     	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //acutal > nueva
@@ -294,11 +297,11 @@ size_t abb_cantidad(abb_t *arbol) {
     return arbol->cantidad;
 }
 
-/*
-void abb_destruir(abb_t *arbol) {
-
+void abb_destruir(abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no me equivoco
+	_abb_destruir(arbol->raiz, arbol->destruir_dato, arbol);
+	free(arbol);
 }
-*/
+
 
 /* *****************************************************************
  *                   PRIMITIVAS DEL ITERADOR EXTERNO
