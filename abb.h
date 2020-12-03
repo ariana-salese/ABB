@@ -18,6 +18,7 @@ typedef void (*abb_destruir_dato_t) (void *);
  *                       PRIMITIVAS DEL ABB
  * *****************************************************************/
 
+//DECLARACIONES A BORRAR
 void imprimir_abb(abb_t *arbol);
 size_t abb_altura(const abb_t* abb);
 

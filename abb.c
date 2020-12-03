@@ -2,6 +2,7 @@
 #include "abb.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdio.h> //Para imprimir, se puede sacar
 
 #define COMPACT //Para imprimir, se puede sacar
@@ -19,6 +20,15 @@ struct abb {
     abb_destruir_dato_t destruir_dato;
     size_t cantidad;
 };
+
+typedef enum accion {
+    NO_BORRAR, BORRAR
+} accion_t;
+
+typedef enum cantidad_hijos {
+    CERO_HIJOS, UN_HIJO, DOS_HIJOS
+} cantidad_hijos_t;
+
 
 /* ******************************************************************
  *                 IMPRIMIR ARBOL (BORRAR AL FINAL)
@@ -111,7 +121,37 @@ void imprimir_abb(abb_t *arbol) {
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
 
+size_t contar_hijos(abb_nodo_t* nodo) {
+    if (!nodo->der && !nodo->izq) return CERO_HIJOS;
+    if (nodo->der && nodo->izq) return DOS_HIJOS;
+    return UN_HIJO;
+}
 
+abb_nodo_t* buscar_hijo_unico(abb_nodo_t* nodo) {
+    if (nodo->der) return nodo->der;
+    if (nodo->izq) return nodo->izq;
+    return NULL;
+}
+
+abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
+    abb_nodo_t* nodo_act = nodo->der;
+
+    while (nodo_act->izq) nodo_act = nodo_act->izq;
+    
+    return nodo_act;
+}
+
+void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no me equivoco
+	
+	if(!nodo) return;
+
+	_abb_destruir(nodo->izq, destruir_dato, arbol);
+	_abb_destruir(nodo->der, destruir_dato, arbol);
+
+	if(destruir_dato) destruir_dato(nodo->dato);
+	free(nodo->clave);
+	free(nodo);
+}
 
 /* ******************************************************************
  *                       PRIMITIVAS DEL ABB
@@ -134,7 +174,7 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     if (!abb_nodo) return NULL;
 
     char* copia_clave = strdup(clave);
-    if(!copia_clave) {
+    if (!copia_clave) {
         free(abb_nodo);
         return NULL;
     }
@@ -147,24 +187,59 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     return abb_nodo;
 }
 
+abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo_t* nodo_ant, const char* clave, accion_t borrar) {
+    if (!nodo_act) return NULL;
+
+    int resultado_cmp_act = cmp(nodo_act->clave, clave);
+   
+    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
+    else if (resultado_cmp_act < 0) return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
+    
+    if (!borrar) return nodo_act;
+
+    int resultado_cmp_ant = 0;
+    if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
+    size_t cant_hijos = contar_hijos(nodo_act);
+    abb_nodo_t* reemplazo = NULL;
+
+    if (cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) {
+        reemplazo = buscar_hijo_unico(nodo_act); //si se te ocurre un nombre mas representativo mejor, no se me ocurre uno que no sea eterno
+            
+        if (resultado_cmp_ant > 0) nodo_ant->der = reemplazo;
+        else nodo_ant->izq = reemplazo;
+
+        return nodo_act;
+    }
+
+    reemplazo = buscar_reemplazo(nodo_act);
+    abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
+    if (!nodo_a_devolver) return NULL;
+                
+    buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
+    
+    free(nodo_act->clave);
+    nodo_act->clave = reemplazo->clave;
+    nodo_act->dato = reemplazo->dato;
+    free(reemplazo);
+		
+    return nodo_a_devolver;
+}
+
 void ubicar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
     if (!nodo_act) {
-    	//printf("Ultimo paso\n");
-        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) { //si la clave nueva es mayor a la anterior
-        	nodo_ant->der = nodo_nuevo;
-        } 
-        else {
-        	nodo_ant->izq = nodo_nuevo;
-        } 
+        if (cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) nodo_ant->der = nodo_nuevo;      
+        else nodo_ant->izq = nodo_nuevo;
         return;
     }
-    if (cmp(nodo_act->clave, nodo_nuevo->clave) > 0) {
-    	//printf("la clave nueva es menor que la clave actual\n");
-    	ubicar_nodo(cmp, nodo_act, nodo_act->izq, nodo_nuevo);//acual > nueva
-    } 
-    else if (cmp(nodo_act->clave, nodo_nuevo->clave) < 0) {
+    int resultado_cmp = cmp(nodo_nuevo->clave, nodo_act->clave);
+    // printf("La clave actual es: %s\n", nodo_act->clave);
+    if (resultado_cmp > 0) {
     	//printf("la clave nueva es mayor que la clave actual\n");
-    	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //actual < nueva
+    	ubicar_nodo(cmp, nodo_act, nodo_act->der, nodo_nuevo); //acutal > nueva
+    } 
+    else if (resultado_cmp < 0) {
+    	//printf("la clave nueva es menor que la clave actual\n");
+    	ubicar_nodo(cmp, nodo_act, nodo_act->izq, nodo_nuevo); //actual < nueva
     } 
     else { //act == nueva
     	//printf("Iguales, reemplazo\n");
@@ -190,29 +265,44 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
     return true;
 }
 
-/*
 void *abb_borrar(abb_t *arbol, const char *clave) {
+    abb_nodo_t* nodo = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, BORRAR);
 
-}
+    if (!nodo) return NULL;
+
+    void* dato_a_devolver = nodo->dato;
+    free(nodo->clave);
+    free(nodo);
+
+    arbol->cantidad--;
+
+    return dato_a_devolver;
+}   
 
 void *abb_obtener(const abb_t *arbol, const char *clave) {
 
+    abb_nodo_t* nodo = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, NO_BORRAR);
+
+    if (!nodo) return NULL;
+    return nodo->dato;
 }
 
 bool abb_pertenece(const abb_t *arbol, const char *clave) {
+    abb_nodo_t* nodo = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, NO_BORRAR);
 
+    if (!nodo) return false;
+    return true;
 }
-*/
 
 size_t abb_cantidad(abb_t *arbol) {
     return arbol->cantidad;
 }
 
-/*
-void abb_destruir(abb_t *arbol) {
-
+void abb_destruir(abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no me equivoco
+	_abb_destruir(arbol->raiz, arbol->destruir_dato, arbol);
+	free(arbol);
 }
-*/
+
 
 /* *****************************************************************
  *                   PRIMITIVAS DEL ITERADOR EXTERNO
