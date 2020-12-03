@@ -2,3 +2,6 @@ Líneas de comandos para compilar/correr valgrind
 
 Compilar:
 cc -g -std=c99 -Wall -Wconversion -Wno-sign-conversion -Wtype-limits -Werror -o main pruebas_abb.c abb.c testing.c
+
+Valgrind:
+valgreen --leak-check=full --track-origins=yes --show-reachable=yes ./main
