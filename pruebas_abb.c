@@ -161,7 +161,7 @@ static void prueba_abb_insertar() {
 	print_test("Pertenece clave1, es false", !abb_pertenece(arbol, clave1));
 	print_test("La cantidad de elementos es 0", abb_cantidad(arbol) == 0);
 
-	/* Inserta otros 2 valores y no los borra (se destruyen con el hash) */
+	/* Inserta otros 2 valores y no los borra (se destruyen con el arbol) */
 	print_test("Guardar clave2", abb_guardar(arbol, clave2, &valor2));
     print_test("La cantidad de elementos es 1", abb_cantidad(arbol) == 1);
     print_test("Obtener clave2 es valor2", *(int*)abb_obtener(arbol, clave2) == valor2);
@@ -227,7 +227,7 @@ static void prueba_abb_reemplazar_con_destruir() {
     print_test("Obtener clave2 es valor2b", abb_obtener(arbol, clave2) == valor2b);
     print_test("La cantidad de elementos es 2", abb_cantidad(arbol) == 2);
 
-    /* Se destruye el hash (se debe liberar lo que quedó dentro) */
+    /* Se destruye el arbol (se debe liberar lo que quedó dentro) */
     abb_destruir(arbol);
 }
 
