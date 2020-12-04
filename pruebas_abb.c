@@ -375,7 +375,8 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 	bool resultado_cantidad = true;
 	bool resultado_pertenece = true;
 	bool resultado_no_pertenece = true;
-
+	
+	/* pide memoria para las claves */
 	for (size_t i = 0; i < cantidad_elementos; i++) claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
 
 	for (size_t i = 0; i < cantidad_elementos;) {
@@ -430,10 +431,8 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 		hash_iter_avanzar(iter_reemplazar);
 	}
 
-	/* actualizo valores */
-	for (size_t i = 0; i < cantidad_elementos / 2; i++) {
-		hash_guardar(elem_pertenecen, claves_modificadas[i], &reemplazos[i]);
-	}
+	/* actualiza valores */
+	for (size_t i = 0; i < cantidad_elementos / 2; i++) hash_guardar(elem_pertenecen, claves_modificadas[i], &reemplazos[i]);
 
 	print_test("Reemplazar mitad de los datos", resultado_guardar);
 	print_test("Se mantuvo la cantidad de elementos", resultado_cantidad);
