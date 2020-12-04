@@ -466,13 +466,9 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 	print_test("la cantidad es 0", abb_cantidad(arbol) == 0);
 
 	//LIBERA MEMORIA
-	for (size_t i = 0; i < cantidad_elementos; i++) {
-		free(claves[i]);
-	}
+	for (size_t i = 0; i < cantidad_elementos; i++) free(claves[i]);
 
-	for (size_t i = 0; i< cantidad_elementos / 2; i++) {
-		free(claves_modificadas[i]);
-	}
+	for (size_t i = 0; i< cantidad_elementos / 2; i++) free(claves_modificadas[i]);
 
 	hash_iter_destruir(iter_reemplazar);
 	hash_iter_destruir(iter_borrar);
