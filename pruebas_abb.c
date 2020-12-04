@@ -12,16 +12,6 @@
  *                 NUESTRAS PRUEBAS (ELIMINAR)
  * *****************************************************************/
 
-//No debería hacer falta, hay que arreglar eso de que no te anda strcmp
-int mi_cmp (const char* a, const char* b) { 
-	int _a = atoi(a);
-	int _b = atoi(b);
-	
-	if (_a > _b) return 1;
-	if (_a < _b) return -1;
-	return 0;
-}
-
 void pruebas_internas() { //Lugar para correr pruebas internas, borrar al final
 
 	abb_t* abb = abb_crear(strcmp, NULL);
@@ -38,7 +28,7 @@ void pruebas_internas() { //Lugar para correr pruebas internas, borrar al final
 }
 
 void prueba_internas_ari() {
-	abb_t* abb = abb_crear(mi_cmp, NULL);
+	abb_t* abb = abb_crear(strcmp, NULL);
 
 	char* claves[] = {"9","7","1","16","17"};
 	int datos[] = {9,7,1,16,17};
@@ -97,7 +87,7 @@ void pruebas_borrar() {
 	abb_t* abb = abb_crear(strcmp, NULL);
 
 	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48"};
-	//char* claves_no_abb[] = {"10", "45", "90", "0", "89"};
+	//char* claves_no_abb[] = {"10", "45", "90", "0", "89", "45", "35", "88", "24", "54", "56", "99", "78", "77", "66"};
 	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48};
 	size_t cant = 14;
 
@@ -139,48 +129,6 @@ void pruebas_borrar() {
  *                      PRUEBAS PRIMITIVAS ABB
  * *****************************************************************/
 
-// static void prueba_abb_un_elemento() {
-// 	printf("\nprueba un solo elemento:\n");
-
-//     abb_t* arbol = abb_crear(strcmp, NULL);
-// 	char* clave = "5";
-// 	int valor = 5;
-
-// 	print_test("Crear arbol vacio", arbol);
-// 	print_test("El arbol esta vacio", abb_cantidad(arbol) == 0);
-// 	print_test("Guardar clave", abb_guardar(arbol, clave, &valor));
-// 	print_test("La cantidad de elementos es 1", abb_cantidad(arbol) == 1);
-// 	print_test("La clave pertenece al arbol", abb_pertenece(arbol, clave));
-// 	print_test("Obtener clave devuelve su valor", *(int*)abb_obtener(arbol, clave) == valor);
-// 	print_test("Borrar clave devuelve su valor", *(int*)abb_borrar(arbol, clave) == valor);
-// 	print_test("La clave ya no pertenece al arbol", !abb_pertenece(arbol, clave));
-// 	print_test("La cantidad de elementos es 0", abb_cantidad(arbol) == 0);
-
-// 	abb_destruir(arbol);
-// }
-
-// static void prueba_abb_guardar() {
-// 	printf("\n> prueba guardar algunos elementos:\n");
-// 	abb_t* arbol = abb_crear(strcmp, NULL);
-
-// 	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
-// 	//char* claves_no_abb[] = {"10", "45", "90", "0", "89", "2", "1", "0", "67890","899", "343", "1231", "44", "2321", "3"};
-// 	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48, 6};
-// 	bool resultado_guardar = true;
-// 	bool resultado_cantidad = true;
-
-// 	for(int i = 0; i < CANTIDAD_ELEMENTOS; i++) {
-// 		if (!abb_guardar(arbol, claves[i], &datos[i])) resultado_guardar = false;
-// 		if (abb_cantidad(arbol) != i + 1) resultado_cantidad = false;
-// 	}
-
-// 	print_test ("Se guardaron algunos elementos", resultado_guardar);
-// 	print_test ("La cantidad de elementos es correcta", resultado_cantidad);
-// 	//print_test("Se cumplen las condiciones de abb", condicion_de_abb(arbol));
-
-// 	abb_destruir(arbol);
-// }
-
 static void prueba_crear_abb_vacio() {
 	printf("> prueba arbol vacio:\n");
 
@@ -194,7 +142,6 @@ static void prueba_crear_abb_vacio() {
     print_test("Borrar clave A, es NULL, no existe", !abb_borrar(arbol, clave));
 
     abb_destruir(arbol);
-	//print_test("Se destruyo el arbol correctamente", true);
 }
 
 static void prueba_abb_insertar() {
@@ -291,7 +238,6 @@ static void prueba_abb_borrar() {
 	abb_t* arbol = abb_crear(strcmp, NULL);
 
 	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
-	//char* claves_no_abb[] = {"10", "45", "90", "0", "89"};
 	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48, 6};
 	bool resultado_guardar = true;
 
@@ -322,7 +268,7 @@ static void prueba_abb_borrar() {
 	print_test("La cantidad de elementos es correcta", abb_cantidad(arbol) == CANTIDAD_ELEMENTOS - 3);
 	print_test("La clave borrada ya no pertenece al árbol", !abb_pertenece(arbol,claves[1]));
 	print_test("Obtener clave borrada es NULL", !abb_obtener(arbol, claves[9]));
-	
+
 	abb_destruir(arbol);
 }
 
@@ -361,49 +307,187 @@ static void prueba_abb_valor_null() {
     abb_destruir(arbol);
 }
 
-// void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
-// 	hash_t* elem_pertenecen = hash_crear(NULL);
-// 	hash_t* elem_no_pertenecen = hash_crear(NULL);
-// 	abb_t* arbol = abb_crear(strcmp, NULL);
+static void prueba_abb_destruir_con_free() {
+	printf("\n> prueba destruir abb liberando datos con free\n");
 
-// 	abb_destruir(arbol);
-// 	char* claves[cantidad_elementos];
-// 	int valores[cantidad_elementos];
-// 	bool resultado_guardar = true;
-// 	bool resultado_reemplazar = true;
+    abb_t* arbol = abb_crear(strcmp, free);
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
+	char* datos[CANTIDAD_ELEMENTOS];
 
-// 	for (size_t i = 0; i < cantidad_elementos;) claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
+	print_test("El arbol se creo vacio", arbol);
 
-// 	for (size_t i = 0; i < cantidad_elementos;) {
-// 		valores[i] = rand() % (cantidad_elementos * 2);
-// 	 	sprintf(claves[i], "%d", valores[i]);
-// 		if (!hash_pertenece(elem_pertenecen, claves[i])) {
+	/* pide memoria para cada dato */
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) datos[i] = malloc(sizeof(char) * CANTIDAD_ELEMENTOS);
 
-// 			i++;
-// 		} else {
-// 			hash_guardar(elem_no_pertenecen, )
-// 		}
-// 	}
-// 	// for (size_t i = 0; i < cantidad_elementos;) {
-// 	// 	valores[i] = rand() % (cantidad_elementos * 2);
-// 	// 	printf("%i\n", valores[i]);
-// 	// 	claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
-// 	// 	sprintf(claves[i], "%d", valores[i]); //primero hay que reservar espacio! error
-// 	// 	printf("en cadena es: %s\n", claves[i]);
-// 	// }
+	bool resultado_guardar = true;
 
-// 	for (size_t i = 0; i < cantidad_elementos; i++) {
-// 		free(claves[i]);
-// 	}
-// }
+	/* guarda los elementos */
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) if (!abb_guardar(arbol, claves[i], datos[i])) resultado_guardar = false;
+	
+	print_test("Se guardaron los elementos con datos dinamicos", resultado_guardar);
+
+	abb_destruir(arbol);
+	printf("Se destruyo el arbol y sus elementos\n");
+}
+
+void _lista_destruir (void* lista) {
+	lista_destruir(lista, NULL);
+}
+
+static void prueba_abb_destruir_con_otra_funcion_de_destruccion() {
+	printf("\n> prueba destruir abb liberando datos con otra funcion\n");
+
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
+	lista_t* datos[CANTIDAD_ELEMENTOS];
+    abb_t* arbol = abb_crear(strcmp, _lista_destruir);
+
+	print_test("El arbol se creo vacio", arbol);
+
+	/* crea cada lista */
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) datos[i] = lista_crear();
+
+	bool resultado_guardar = true;
+
+	/* guarda los elementos */
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) if (!abb_guardar(arbol, claves[i], datos[i])) resultado_guardar = false;
+	
+	print_test("Se guardaron los elementos con datos dinamicos", resultado_guardar);
+
+	abb_destruir(arbol);
+	printf("Se destruyo el arbol y sus elementos\n");
+
+}
+
+void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
+	/* crea estructura auxiliar */
+	hash_t* elem_pertenecen = hash_crear(NULL);
+
+	char* claves[cantidad_elementos];
+	int valores[cantidad_elementos];
+	int max = 3;
+
+	abb_t* arbol = abb_crear(strcmp, NULL);
+
+	//GUARDA ELEMENTOS
+	/* pruebas */
+	bool resultado_guardar = true;
+	bool resultado_obtener = true;
+	bool resultado_cantidad = true;
+	bool resultado_pertenece = true;
+	bool resultado_no_pertenece = true;
+
+	for (size_t i = 0; i < cantidad_elementos; i++) claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
+
+	for (size_t i = 0; i < cantidad_elementos;) {
+		valores[i] = rand() % (cantidad_elementos * max);
+	 	sprintf(claves[i], "%d", valores[i]);
+
+		if (hash_pertenece(elem_pertenecen, claves[i])) {
+			free(claves[i]);
+			claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
+			continue;
+		}
+
+		if (abb_pertenece(arbol, claves[i])) resultado_no_pertenece = false;
+		if (!abb_guardar(arbol, claves[i], &valores[i])) resultado_guardar = false;
+		if (*(int*)abb_obtener(arbol, claves[i]) != valores[i]) resultado_obtener = false;
+		if (!abb_pertenece(arbol, claves[i])) resultado_pertenece = false;
+		hash_guardar(elem_pertenecen, claves[i], &valores[i]);
+		i++;
+		if (abb_cantidad(arbol) != i) resultado_cantidad = false;
+	}
+
+	print_test("Previo a guardar no pertenecen", resultado_no_pertenece);
+	print_test("Guardar todos los elementos", resultado_guardar);
+	print_test("Todos pertenecen", resultado_pertenece);
+	print_test("La cantidad de elementos se mantuvo correcta", resultado_cantidad);
+	print_test("Obtener cada una de las claves devuelve su valor", resultado_obtener);
+	
+	//REEMPLAZA ELEMENTOS
+	hash_iter_t* iter_reemplazar = hash_iter_crear(elem_pertenecen);
+	int reemplazos[cantidad_elementos/2];
+	char* claves_modificadas[cantidad_elementos/2];
+
+	/* pruebas */
+	bool resultado_reemplazar = true;
+	resultado_guardar = true;
+	resultado_cantidad = true;
+	resultado_pertenece = true;
+
+	for (size_t i = 0; i < cantidad_elementos / 2; i++) {
+	
+		const char* clave_actual = hash_iter_ver_actual(iter_reemplazar);
+		char* clave_actual_copia = strdup(clave_actual);
+		claves_modificadas[i] = clave_actual_copia;
+
+		reemplazos[i] = rand() % (cantidad_elementos * max);
+
+		if (!abb_guardar(arbol, clave_actual, &reemplazos[i])) resultado_guardar = false;
+		if (!abb_pertenece(arbol, clave_actual)) resultado_pertenece = false;
+		if (abb_cantidad(arbol) != cantidad_elementos) resultado_cantidad = false;
+		if (*(int*)abb_obtener(arbol, clave_actual) != reemplazos[i]) resultado_reemplazar = false;
+
+		hash_iter_avanzar(iter_reemplazar);
+	}
+
+	/* actualizo valores */
+	for (size_t i = 0; i < cantidad_elementos / 2; i++) {
+		hash_guardar(elem_pertenecen, claves_modificadas[i], &reemplazos[i]);
+	}
+
+	print_test("Reemplazar mitad de los datos", resultado_guardar);
+	print_test("Se mantuvo la cantidad de elementos", resultado_cantidad);
+	print_test("Los datos se modificaron", resultado_reemplazar);
+	print_test("Las claves no se modificaron", resultado_pertenece);
+
+	//BORRA ELEMENTOS
+	hash_iter_t* iter_borrar = hash_iter_crear(elem_pertenecen);
+
+	/* pruebas */
+	bool resultado_borrar = true;
+	bool resultado_borrar_segunda_vez = true;
+	resultado_cantidad = true;
+	resultado_no_pertenece = true;
+
+	for (size_t i = 0; i < cantidad_elementos; i++) {
+		const char* clave_actual = hash_iter_ver_actual(iter_borrar);
+
+		if (*(int*)abb_borrar(arbol, clave_actual) != *(int*)hash_obtener(elem_pertenecen, clave_actual)) resultado_borrar = false;
+		if (abb_borrar(arbol, clave_actual)) resultado_borrar_segunda_vez = false;
+		if (abb_cantidad(arbol) != cantidad_elementos - i - 1) resultado_cantidad = false;
+		if (abb_pertenece(arbol, clave_actual)) resultado_no_pertenece = false;
+
+		hash_iter_avanzar(iter_borrar);
+	}
+
+	print_test("Se borraron todos los elementos", resultado_borrar);
+	print_test("Borrar una segunda vez devuelve NULL", resultado_borrar_segunda_vez);
+	print_test("la cantidad se actualizo correctamente", resultado_cantidad);
+	print_test("Los elementos borrados ya no pertenecen", resultado_no_pertenece);
+	print_test("la cantidad es 0", abb_cantidad(arbol) == 0);
+
+	//LIBERA MEMORIA
+	for (size_t i = 0; i < cantidad_elementos; i++) {
+		free(claves[i]);
+	}
+
+	for (size_t i = 0; i< cantidad_elementos / 2; i++) {
+		free(claves_modificadas[i]);
+	}
+
+	hash_iter_destruir(iter_reemplazar);
+	hash_iter_destruir(iter_borrar);
+	hash_destruir(elem_pertenecen);
+	abb_destruir(arbol);
+}
 
 static void prueba_abb_volumen() {
 
 	printf("\n> prueba de volumen (5000 elementos)\n");
-	_prueba_abb_volumen(100, 3);
+	_prueba_abb_volumen(5000, 5);
 
 	printf("\n> prueba de volumen (10000 elementos)\n");
-	//_prueba_abb_volumen(10000);
+	_prueba_abb_volumen(10000, 5);
 }
 
 void nuestras_pruebas_primitivas_abb() {
@@ -413,22 +497,25 @@ void nuestras_pruebas_primitivas_abb() {
 
 void pruebas_primitivas_abb() {
 	prueba_crear_abb_vacio();
-	prueba_abb_guardar(); //eliminable maybe, lo voy a hacer en prueba de volumen 
 	prueba_abb_insertar();
 	prueba_abb_reemplazar();
 	prueba_abb_reemplazar_con_destruir();
 	prueba_abb_borrar();
 	prueba_abb_clave_vacia();
 	prueba_abb_valor_null();
+	prueba_abb_destruir_con_free();
+	prueba_abb_destruir_con_otra_funcion_de_destruccion();
 	prueba_abb_volumen();
 }
 
 // void pruebas_iterador_externo() {
-
+//     prueba_iterar_abb_vacio();
+//     prueba_abb_iterar();
+//     prueba_abb_iterar_volumen(5000);
 // }
 
 // void pruebas_iterador_interno() {
-
+//	  
 // }
 
 void pruebas_abb_estudiante() {

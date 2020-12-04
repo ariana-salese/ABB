@@ -141,16 +141,20 @@ abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
     return nodo_act;
 }
 
-void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no me equivoco
+void abb_nodo_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, accion_t borrar) {
+    if (destruir_dato && borrar) destruir_dato(nodo->dato);
+    free(nodo->clave);
+    free(nodo);
+}
+
+void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *arbol) {
 	
 	if (!nodo) return;
 
 	_abb_destruir(nodo->izq, destruir_dato, arbol);
 	_abb_destruir(nodo->der, destruir_dato, arbol);
 
-	if (destruir_dato) destruir_dato(nodo->dato);
-	free(nodo->clave);
-	free(nodo);
+    abb_nodo_destruir(nodo, destruir_dato, BORRAR);
 }
 
 abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
@@ -173,72 +177,60 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
 
 abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo_t* nodo_ant, const char* clave, accion_t borrar) {
     if (!nodo_act) return NULL;
-    //printf("busco resultado cmp\n");
+
     int resultado_cmp_act = cmp(nodo_act->clave, clave);
-    //printf("tengo resultado\n");
+
     if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
     else if (resultado_cmp_act < 0) return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
-    //printf("encontre la clave a eliminar\n");
+    
     if (!borrar) return nodo_act;
 
     int resultado_cmp_ant = 0;
-    //printf("busco resultado cmp de ant\n");
     if (nodo_ant) resultado_cmp_ant = cmp(clave, nodo_ant->clave);
-    //printf("busco cantidad de hijos\n");
     size_t cant_hijos = contar_hijos(nodo_act);
-    //printf("tengo cantidad de hijos\n");
     abb_nodo_t* reemplazo = NULL;
 
-    if (cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) {
-        //printf("tiene uno o cero hijos\n");
-        reemplazo = buscar_hijo_unico(nodo_act); //si se te ocurre un nombre mas representativo mejor, no se me ocurre uno que no sea eterno
+    if ((cant_hijos == CERO_HIJOS || cant_hijos == UN_HIJO) && nodo_ant) {
+        reemplazo = buscar_hijo_unico(nodo_act);
+
         if (resultado_cmp_ant > 0) nodo_ant->der = reemplazo;
         else nodo_ant->izq = reemplazo; 
 
         return nodo_act;
     }
-    //printf("voy a reemplazar\n");
+    
     reemplazo = buscar_reemplazo(nodo_act);
     abb_nodo_t* nodo_a_devolver = abb_nodo_crear(nodo_act->clave, nodo_act->dato);
     if (!nodo_a_devolver) return NULL;
-    //if (!reemplazo) return nodo_a_devolver;
 
     buscar_nodo(cmp, nodo_act, nodo_ant, reemplazo->clave, BORRAR);
     
     free(nodo_act->clave);
-    //if (arbol->destruir_dato) arbol->destruir_dato(nodo_act->dato);
     nodo_act->clave = reemplazo->clave;
     nodo_act->dato = reemplazo->dato;
     free(reemplazo);
-	//printf("termine\n");
+
     return nodo_a_devolver;
 }
 
 void ubicar_nodo(abb_t* arbol, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
-   //printf("holi\n");
     if (!nodo_act) {
-        //printf("entre\n");
         if (arbol->cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) nodo_ant->der = nodo_nuevo;      
         else nodo_ant->izq = nodo_nuevo;
         return;
     }
     int resultado_cmp = arbol->cmp(nodo_nuevo->clave, nodo_act->clave);
-    //printf("La clave actual es: %s\n", nodo_act->clave);
-    //printf("cmp devuelve: %i\n", resultado_cmp);
+
     if (resultado_cmp > 0) {
-    	//printf("la clave nueva es mayor que la clave actual\n");
-    	ubicar_nodo(arbol, nodo_act, nodo_act->der, nodo_nuevo); //acutal > nueva
+    	ubicar_nodo(arbol, nodo_act, nodo_act->der, nodo_nuevo); //actual > nueva
     } 
     else if (resultado_cmp < 0) {
-    	//printf("la clave nueva es menor que la clave actual\n");
     	ubicar_nodo(arbol, nodo_act, nodo_act->izq, nodo_nuevo); //actual < nueva
     } 
     else { //act == nueva
-    	//printf("Iguales, reemplazo\n");
         if (arbol->destruir_dato) arbol->destruir_dato(nodo_act->dato);
         nodo_act->dato = nodo_nuevo->dato;
-        free(nodo_nuevo->clave);
-        free(nodo_nuevo);
+        abb_nodo_destruir(nodo_nuevo, arbol->destruir_dato, NO_BORRAR);
         arbol->cantidad--;
         return;
     }
@@ -265,29 +257,26 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
     if (!nuevo_abb_nodo) return false;
 
     if (arbol->raiz) {
-    	//printf("No estaba vacio, lo ubico\n");
         ubicar_nodo(arbol, NULL, arbol->raiz, nuevo_abb_nodo);
     } else {
         arbol->raiz = nuevo_abb_nodo;
-        //printf("Estaba vacio, lo pongo en la raiz\n");
     }
-    //printf("Guardé algo\n");
+
     arbol->cantidad++;
 
     return true;
 }
 
 void *abb_borrar(abb_t *arbol, const char *clave) {
-    abb_nodo_t* nodo_a_eliminar;
+    abb_nodo_t* nodo_a_eliminar = NULL;
 
-    if (arbol->cantidad == 1) nodo_a_eliminar = arbol->raiz;
+    if (arbol->cantidad == 1 && arbol->cmp(arbol->raiz->clave, clave) == 0) nodo_a_eliminar = arbol->raiz;
     else nodo_a_eliminar = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, BORRAR);
     
     if (!nodo_a_eliminar) return NULL;
     
     void* dato_a_devolver = nodo_a_eliminar->dato;
-    free(nodo_a_eliminar->clave);
-    free(nodo_a_eliminar);
+    abb_nodo_destruir(nodo_a_eliminar, arbol->destruir_dato, NO_BORRAR);
 
     arbol->cantidad--;
     if (arbol->cantidad == 0) arbol->raiz = NULL;
@@ -296,7 +285,6 @@ void *abb_borrar(abb_t *arbol, const char *clave) {
 }   
 
 void *abb_obtener(const abb_t *arbol, const char *clave) {
-
     abb_nodo_t* nodo = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, NO_BORRAR);
 
     if (!nodo) return NULL;
