@@ -316,7 +316,7 @@ void abb_destruir(abb_t *arbol) { // Tiene que hacer recorrido Post-Order si no 
 
 void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo){
 	
-	if(!nodo) return;
+	if (!nodo) return;
 
 	poblar_cola_iter(cola, nodo->izq);
 	cola_encolar(cola, nodo->clave);
@@ -326,11 +326,11 @@ void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo){
 abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 	abb_iter_t *iter = malloc(sizeof(abb_iter_t));
 
-	if(!iter) return NULL;
+	if (!iter) return NULL;
 
 	iter->cola = cola_crear();
 
-	if(!iter->cola){
+	if (!iter->cola) {
 		free(iter);
 		return NULL;
 	}
@@ -342,14 +342,14 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 }
 
 bool abb_iter_in_avanzar(abb_iter_t *iter) {
-	if(cola_esta_vacia(iter->cola)) return false;
+	if (cola_esta_vacia(iter->cola)) return false;
 
 	cola_desencolar(iter->cola);
 	return true;
 }
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter) {
-	if(abb_iter_in_al_final(iter)) return NULL;
+	if (abb_iter_in_al_final(iter)) return NULL;
 	return cola_ver_primero(iter->cola);
 }
 
