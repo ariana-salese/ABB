@@ -124,6 +124,37 @@ void pruebas_borrar() {
 	
 	abb_destruir(abb);
 }
+/* ******************************************************************
+ *                      FUNCIONES AUXILIARES
+ * *****************************************************************/
+
+bool sumar_n(const char* clave, void* dato, void* extra) {
+	int dato_act = *(int*)dato;
+
+	if (dato_act > 30) return false;
+
+	*(int*)extra += dato_act;
+	return true;
+}
+
+bool obtener_dato(const char* clave, void* dato, void* extra) {
+	lista_insertar_ultimo(extra, dato);
+	return true;
+}
+
+bool duplicar_dato(const char* clave, void* dato, void* extra) {
+	*(int*)dato = *(int*)dato * 2;
+	return true;
+}
+
+bool imprimir_clave(const char* clave, void* dato, void* extra) {
+	if (strcmp(clave, (char*)extra) == 0)  {	
+		printf("\n");
+		return false;
+	}
+	printf("%s ", clave);
+	return true;
+}
 
 /* ******************************************************************
  *                      PRUEBAS PRIMITIVAS ABB
@@ -485,6 +516,79 @@ static void prueba_abb_volumen() {
 	_prueba_abb_volumen(10000, 5);
 }
 
+/* ******************************************************************
+ *                    PRUEBAS ITERADOR EXTERNO
+ * *****************************************************************/
+
+/* ******************************************************************
+ *                    PRUEBAS ITERADOR INTERNO
+ * *****************************************************************/
+
+static void prueba_iterar_int() {
+	abb_t* arbol = abb_crear(strcmp, NULL);
+
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "06"};
+	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48, 6};
+	bool resultado_guardar = true;
+
+	for(int i = 0; i < CANTIDAD_ELEMENTOS; i++) {
+		if (!abb_guardar(arbol, claves[i], &datos[i])) resultado_guardar = false;
+	}
+
+	print_test("Se guardaron algunos elementos", resultado_guardar);
+
+	/* con extra hasta x dato */
+	printf("\n> prueba iterar con extra y corte segun dato\n");
+
+	int suma_total = 191;
+	int suma_total_iter = 0;
+
+	abb_in_order(arbol, sumar_n, &suma_total_iter);
+
+	print_test("Con funcion visitar (sumar todos)", suma_total_iter == suma_total);
+
+	/* con extra hasta x clave */
+	printf("\n> prueba iterar con extra y corte segun clave\n");
+
+	printf("Con funcion visitar imprimir_claves, resultado esperado: 06 09 12 15 16 19\n");
+
+	printf("Resultado obtenido: ");
+	abb_in_order(arbol, imprimir_clave, "20");
+
+	/* con extra y sin corte */
+	printf("\n> prueba iterar con extra y sin corte\n");
+
+	int datos_en_orden[] = {6, 9, 12, 15, 16, 19, 20, 21, 22, 23, 28, 34, 42, 48, 55};
+	lista_t* datos_en_orden_iter = lista_crear();
+
+	abb_in_order(arbol, obtener_dato, datos_en_orden_iter);
+
+	print_test("Con funcion visitar (obtener datos)", lista_largo(datos_en_orden_iter) == CANTIDAD_ELEMENTOS);
+
+	bool resultado_orden = true;
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) {
+		if (datos_en_orden[i] != *(int*)lista_borrar_primero(datos_en_orden_iter)) resultado_orden = false;
+	}
+
+	print_test("Los datos quedaron en el orden correcto", resultado_orden);
+
+	lista_destruir(datos_en_orden_iter, NULL);
+
+	/* sin extra y modificando datos */
+	printf("\n> prueba iterar sin extra y modificando datos\n");
+
+	bool resultado_modificar = true;
+	abb_in_order(arbol, duplicar_dato, NULL);
+
+	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) {
+		if (*(int*)abb_obtener(arbol, claves[i]) != datos[i]) resultado_modificar = false;
+	}
+
+	print_test("Con funcion visitar (duplicar dato)", resultado_modificar);
+
+	abb_destruir(arbol);
+}
+
 void nuestras_pruebas_primitivas_abb() {
 	prueba_buscar_nodo();
 	pruebas_borrar();
@@ -504,14 +608,14 @@ void pruebas_primitivas_abb() {
 }
 
 // void pruebas_iterador_externo() {
-//     prueba_iterar_abb_vacio();
-//     prueba_abb_iterar();
-//     prueba_abb_iterar_volumen(5000);
+//     prueba_iter_ext_abb_vacio();
+//     prueba_abb_iterar_ext();
+//     prueba_abb_iterar_ext_volumen(5000);
 // }
 
-// void pruebas_iterador_interno() {
-//	  
-// }
+void pruebas_iterador_interno() {
+	prueba_iterar_int();
+}
 
 void pruebas_abb_estudiante() {
 
@@ -523,8 +627,8 @@ void pruebas_abb_estudiante() {
 	//printf("\nPRUEBAS ITERADOR EXTERNO:\n");
 	//pruebas_iterador_externo();
 
-	//printf("\nPRUEBAS ITERADOR INTERNO:\n");
-	//pruebas_iterador_interno();
+	printf("\nPRUEBAS ITERADOR INTERNO:\n");
+	pruebas_iterador_interno();
 }
 
 //#ifndef CORRECTOR
