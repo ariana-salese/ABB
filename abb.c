@@ -390,8 +390,11 @@ void poblar_cola_iter_interno(cola_t* nodos, abb_nodo_t* nodo) {
 // }
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra) {
+
+    if (!arbol->raiz) return;
+	
     cola_t* nodos = cola_crear();
-    if (!nodos || !arbol->raiz) return;
+    if (!nodos) return; 
 
     poblar_cola_iter_interno(nodos, arbol->raiz);
 
