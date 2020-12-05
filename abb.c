@@ -317,13 +317,13 @@ void abb_destruir(abb_t *arbol) {
  *                   PRIMITIVAS DEL ITERADOR EXTERNO
  * *****************************************************************/
 
-void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo){
+void poblar_cola_iter_externo(cola_t* cola, abb_nodo_t* nodo){
 	
 	if (!nodo) return;
 
-	poblar_cola_iter(cola, nodo->izq);
+	poblar_cola_iter_externo(cola, nodo->izq);
 	cola_encolar(cola, nodo->clave);
-	poblar_cola_iter(cola, nodo->der);
+	poblar_cola_iter_externo(cola, nodo->der);
 }
 
 abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
@@ -339,7 +339,7 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 	}
 
 	iter->arbol = arbol;
-	poblar_cola_iter(iter->cola, arbol->raiz);
+	poblar_cola_iter_externo(iter->cola, arbol->raiz);
 
 	return iter;
 }
@@ -365,13 +365,40 @@ void abb_iter_in_destruir(abb_iter_t* iter) {
 	free(iter);
 }
 
-
 /* *****************************************************************
- *                      DECLARACION ITERADOR INTERNO
+ *                   DECLARACION ITERADOR INTERNO
  * *****************************************************************/
- 
-/*
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra) {
 
+/* hice otro para no modificar lo que habias hecho */
+void poblar_cola_iter_interno(cola_t* nodos, abb_nodo_t* nodo) {
+    if (!nodo) return;
+
+    poblar_cola_iter_interno(nodos, nodo->izq);
+	cola_encolar(nodos, nodo);
+	poblar_cola_iter_interno(nodos, nodo->der);
 }
-*/
+
+/* este podria ser uno generico */
+// void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo, bool claves) {
+	
+// 	if (!nodo) return;
+
+// 	poblar_cola_iter_externo(cola, nodo->izq);
+// 	if (claves) cola_encolar(cola, nodo->clave);
+//     else cola_encolar(cola, nodo);
+// 	poblar_cola_iter_externo(cola, nodo->der);
+// }
+
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra) {
+    cola_t* nodos = cola_crear();
+    if (!nodos || !arbol->raiz) return;
+
+    poblar_cola_iter_interno(nodos, arbol->raiz);
+
+    while (!cola_esta_vacia(nodos)) {
+        abb_nodo_t* nodo_act = (abb_nodo_t*)cola_desencolar(nodos); //no se si es necesario (abb_nodo_t*)
+        if (!visitar(nodo_act->clave, nodo_act->dato, extra)) break;
+    }
+
+    cola_destruir(nodos, NULL);
+}
