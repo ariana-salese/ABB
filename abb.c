@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "abb.h"
+#include "cola.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -19,6 +20,11 @@ struct abb {
     abb_comparar_clave_t cmp;
     abb_destruir_dato_t destruir_dato;
     size_t cantidad;
+};
+
+struct abb_iter {
+    const abb_t* arbol;
+    cola_t* cola;
 };
 
 typedef enum accion {
@@ -311,27 +317,54 @@ void abb_destruir(abb_t *arbol) {
  *                   PRIMITIVAS DEL ITERADOR EXTERNO
  * *****************************************************************/
 
-/*
-abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
+void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo){
+	
+	if (!nodo) return;
 
+	poblar_cola_iter(cola, nodo->izq);
+	cola_encolar(cola, nodo->clave);
+	poblar_cola_iter(cola, nodo->der);
+}
+
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
+	abb_iter_t *iter = malloc(sizeof(abb_iter_t));
+
+	if (!iter) return NULL;
+
+	iter->cola = cola_crear();
+
+	if (!iter->cola) {
+		free(iter);
+		return NULL;
+	}
+
+	iter->arbol = arbol;
+	poblar_cola_iter(iter->cola, arbol->raiz);
+
+	return iter;
 }
 
 bool abb_iter_in_avanzar(abb_iter_t *iter) {
+	if (cola_esta_vacia(iter->cola)) return false;
 
+	cola_desencolar(iter->cola);
+	return true;
 }
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter) {
-
+	if (abb_iter_in_al_final(iter)) return NULL;
+	return cola_ver_primero(iter->cola);
 }
 
 bool abb_iter_in_al_final(const abb_iter_t *iter) {
-
+	return cola_esta_vacia(iter->cola);
 }
 
 void abb_iter_in_destruir(abb_iter_t* iter) {
-
+	cola_destruir(iter->cola, NULL);
+	free(iter);
 }
-*/
+
 
 /* *****************************************************************
  *                      DECLARACION ITERADOR INTERNO
