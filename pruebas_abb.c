@@ -268,7 +268,7 @@ static void prueba_abb_borrar() {
 
 	abb_t* arbol = abb_crear(strcmp, NULL);
 
-	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "06"};
 	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48, 6};
 	bool resultado_guardar = true;
 
@@ -342,7 +342,7 @@ static void prueba_abb_destruir_con_free() {
 	printf("\n> prueba destruir abb liberando datos con free\n");
 
     abb_t* arbol = abb_crear(strcmp, free);
-	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "06"};
 	char* datos[CANTIDAD_ELEMENTOS];
 
 	print_test("El arbol se creo vacio", arbol);
@@ -368,7 +368,7 @@ void _lista_destruir (void* lista) {
 static void prueba_abb_destruir_con_otra_funcion_de_destruccion() {
 	printf("\n> prueba destruir abb liberando datos con otra funcion\n");
 
-	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "6"};
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "06"};
 	lista_t* datos[CANTIDAD_ELEMENTOS];
     abb_t* arbol = abb_crear(strcmp, _lista_destruir);
 
