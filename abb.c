@@ -140,10 +140,15 @@ abb_nodo_t* buscar_hijo_unico(abb_nodo_t* nodo) {
 }
 
 abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
-    abb_nodo_t* nodo_act = nodo->der;
-
-    while (nodo_act->izq) nodo_act = nodo_act->izq;
-    
+    abb_nodo_t* nodo_act;
+    if(nodo->der){
+        nodo_act = nodo->der;
+        while (nodo_act->izq) nodo_act = nodo_act->izq;
+    }
+    else{
+        nodo_act = nodo->izq;
+        while (nodo_act->der) nodo_act = nodo_act->der;
+    }
     return nodo_act;
 }
 
