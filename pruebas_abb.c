@@ -16,15 +16,31 @@ void pruebas_internas() { //Lugar para correr pruebas internas, borrar al final
 
 	abb_t* abb = abb_crear(strcmp, NULL);
 
-	char* claves[] = {"18","23","16","21","12","17","11","15"};
-	int datos[] = {18,23,16,21,12,17,11,15};
+	char* claves[] = {"2","1","3","4","5"};
+	int datos[] = {2,1,3,4,5};
 
-	for(int i = 0; i < 8; i++){
+	for(int i = 0; i < 5; i++){
 		abb_guardar(abb, claves[i], datos+i);
-		imprimir_abb(abb);
-		printf("El árbol de arriba tiene altura: %zu\n", abb_altura(abb));
-		printf("\n\n");
 	}
+	imprimir_abb(abb);
+	printf("El árbol de arriba tiene altura: %zu\n", abb_altura(abb));
+	printf("\n\n");
+
+	printf("Borro 5\n");
+	abb_borrar(abb, claves[4]);
+	imprimir_abb(abb);
+
+	printf("Borro 4\n");
+	abb_borrar(abb, claves[3]);
+	imprimir_abb(abb);
+
+	printf("Borro 3\n");
+	abb_borrar(abb, claves[2]);
+	imprimir_abb(abb);
+
+	printf("Borro 2\n");
+	abb_borrar(abb, claves[0]);
+	imprimir_abb(abb);
 }
 
 void prueba_internas_ari() {
@@ -372,7 +388,7 @@ static void prueba_abb_destruir_con_otra_funcion_de_destruccion() {
 	lista_t* datos[CANTIDAD_ELEMENTOS];
     abb_t* arbol = abb_crear(strcmp, _lista_destruir);
 
-	print_test("El arbol se creo vacio", arbol);
+	print_test("El arbol se creo vacio", arbol);//WOT DAFIOQ
 
 	/* crea cada lista */
 	for (size_t i = 0; i < CANTIDAD_ELEMENTOS; i++) datos[i] = lista_crear();
@@ -520,6 +536,163 @@ static void prueba_abb_volumen() {
  *                    PRUEBAS ITERADOR EXTERNO
  * *****************************************************************/
 
+static void prueba_iter_ext_abb_vacio() {
+	printf("> prueba iterador externo vacío\n");
+
+	abb_t* arbol = abb_crear(strcmp, NULL);
+	print_test("Se creó un arbol vacío", !abb_cantidad(arbol));
+
+	abb_iter_t* iter = abb_iter_in_crear(arbol);
+
+	print_test("El iterador no puede avanzar", !abb_iter_in_avanzar(iter));
+	print_test("El actual es NULL", !abb_iter_in_ver_actual(iter));
+	print_test("El iterador está al final", abb_iter_in_al_final(iter));
+
+	abb_iter_in_destruir(iter);
+	abb_destruir(arbol);
+}
+
+static void prueba_abb_iterar_ext() {
+	printf("> prueba iterar árbol con iterador externo\n");
+
+	abb_t* arbol = abb_crear(strcmp, NULL);
+
+	char* claves[] = {"23", "34", "28", "42", "12", "16", "15", "19", "21", "55", "09", "20", "22", "48", "06"};
+	char* claves_in_order[] = {"06", "09", "12", "15", "16", "19", "20", "21", "22", "23", "28", "34", "42", "48", "55"};
+	int datos[] = {23, 34, 28, 42, 12, 16, 15, 19, 21, 55, 9, 20, 22, 48, 6};
+	bool resultado_guardar = true;
+
+	for(int i = 0; i < CANTIDAD_ELEMENTOS; i++) {
+		if (!abb_guardar(arbol, claves[i], &datos[i])) resultado_guardar = false;
+	}
+
+	print_test("Se guardaron algunos elementos", resultado_guardar);
+
+	abb_iter_t* iter = abb_iter_in_crear(arbol);
+
+	bool resultado_ver_actual = true;
+	bool resultado_al_final = true;
+	bool resultado_avanzar = true;
+
+	printf("Recorro todos los elementos con el iterador\n");
+	for(int i = 0; i < CANTIDAD_ELEMENTOS; i++) {
+		if(strcmp(abb_iter_in_ver_actual(iter), claves_in_order[i])) resultado_ver_actual = false;
+		if(abb_iter_in_al_final(iter)) resultado_al_final = false;
+		if(!abb_iter_in_avanzar(iter)) resultado_avanzar = false;
+	}
+
+	print_test("Los elementos recorridos eran los esperados", resultado_ver_actual);
+	print_test("El iterador no estuvo 'al final' durante el recorrido", resultado_al_final);
+	print_test("El iterador pudo avanzar en todos los casos", resultado_avanzar);		
+	print_test("El iterador está al final", abb_iter_in_al_final(iter));
+
+	abb_iter_in_destruir(iter);
+	abb_destruir(arbol);
+}
+
+static void _prueba_abb_iterar_ext_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
+	/* crea estructura auxiliar */
+	hash_t* elem_pertenecen = hash_crear(NULL);
+
+	char* claves[cantidad_elementos];
+	int valores[cantidad_elementos];
+	int max = 3;
+
+	abb_t* arbol = abb_crear(strcmp, NULL);
+
+	//GUARDA ELEMENTOS
+	
+	/* pide memoria para las claves */
+	for (size_t i = 0; i < cantidad_elementos; i++) claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
+
+	bool resultado_guardar = true;
+
+	for (size_t i = 0; i < cantidad_elementos;) {
+		valores[i] = rand() % (cantidad_elementos * max);
+	 	sprintf(claves[i], "%d", valores[i]);
+
+		if (hash_pertenece(elem_pertenecen, claves[i])) {
+			free(claves[i]);
+			claves[i] = malloc(sizeof(char) * (cantidad_digitos + 1));
+			continue;
+		}
+
+		if (!abb_guardar(arbol, claves[i], &valores[i])) resultado_guardar = false;
+		hash_guardar(elem_pertenecen, claves[i], &valores[i]);
+		i++;
+	}
+
+	print_test("Guardar todos los elementos", resultado_guardar);
+
+	abb_iter_t* iter = abb_iter_in_crear(arbol);
+
+	bool resultado_ver_actual = true;
+	bool resultado_al_final = true;
+	bool resultado_avanzar = true;
+
+	printf("Recorro todos los elementos con el iterador\n");
+
+	char* clave_anterior = NULL;
+	
+	for(int i = 0; i < cantidad_elementos; i++) {	
+		if(i > 0){		
+			if(strcmp(abb_iter_in_ver_actual(iter), clave_anterior) < 0) resultado_ver_actual = false;
+			free(clave_anterior);
+		} 	
+		clave_anterior = strdup(abb_iter_in_ver_actual(iter));
+		if(abb_iter_in_al_final(iter)) resultado_al_final = false;
+		if(!abb_iter_in_avanzar(iter)) resultado_avanzar = false;
+	}
+	free(clave_anterior);
+
+	print_test("Los elementos recorridos eran los esperados", resultado_ver_actual);
+	print_test("El iterador no estuvo 'al final' durante el recorrido", resultado_al_final);
+	print_test("El iterador pudo avanzar en todos los casos", resultado_avanzar);		
+	print_test("El iterador está al final", abb_iter_in_al_final(iter));
+
+	//BORRA ELEMENTOS
+	hash_iter_t* iter_borrar = hash_iter_crear(elem_pertenecen);
+
+	/* pruebas */
+	bool resultado_borrar = true;
+	bool resultado_borrar_segunda_vez = true;
+	bool resultado_cantidad = true;
+	bool resultado_no_pertenece = true;
+
+	for (size_t i = 0; i < cantidad_elementos; i++) {
+		const char* clave_actual = hash_iter_ver_actual(iter_borrar);
+
+		if (*(int*)abb_borrar(arbol, clave_actual) != *(int*)hash_obtener(elem_pertenecen, clave_actual)) resultado_borrar = false;
+		if (abb_borrar(arbol, clave_actual)) resultado_borrar_segunda_vez = false;
+		if (abb_cantidad(arbol) != cantidad_elementos - i - 1) resultado_cantidad = false;
+		if (abb_pertenece(arbol, clave_actual)) resultado_no_pertenece = false;
+
+		hash_iter_avanzar(iter_borrar);
+	}
+
+	print_test("Se borraron todos los elementos", resultado_borrar);
+	print_test("Borrar una segunda vez devuelve NULL", resultado_borrar_segunda_vez);
+	print_test("la cantidad se actualizo correctamente", resultado_cantidad);
+	print_test("Los elementos borrados ya no pertenecen", resultado_no_pertenece);
+	print_test("la cantidad es 0", abb_cantidad(arbol) == 0);
+
+	//LIBERA MEMORIA
+	for (size_t i = 0; i < cantidad_elementos; i++) free(claves[i]);
+
+	abb_iter_in_destruir(iter);
+	hash_iter_destruir(iter_borrar);
+	hash_destruir(elem_pertenecen);
+	abb_destruir(arbol);
+}
+
+static void prueba_abb_iterar_ext_volumen() {
+	printf("\n> prueba de volumen  del iterador externo (5000 elementos)\n");
+	_prueba_abb_iterar_ext_volumen(5000, 5);
+
+	printf("\n> prueba de volumen del iterador externo (10000 elementos)\n");
+	_prueba_abb_iterar_ext_volumen(10000, 5);
+}
+
 /* ******************************************************************
  *                    PRUEBAS ITERADOR INTERNO
  * *****************************************************************/
@@ -607,25 +780,25 @@ void pruebas_primitivas_abb() {
 	prueba_abb_volumen();
 }
 
-// void pruebas_iterador_externo() {
-//     prueba_iter_ext_abb_vacio();
-//     prueba_abb_iterar_ext();
-//     prueba_abb_iterar_ext_volumen(5000);
-// }
+void pruebas_iterador_externo() {
+    prueba_iter_ext_abb_vacio();
+    prueba_abb_iterar_ext();
+    prueba_abb_iterar_ext_volumen();
+}
 
 void pruebas_iterador_interno() {
 	prueba_iterar_int();
 }
 
 void pruebas_abb_estudiante() {
-
-	//nuestras_pruebas_primitivas_abb();
+	//pruebas_internas();
+	nuestras_pruebas_primitivas_abb();
 	
 	printf("PRUEBAS PRIMITIVAS ARBOL:\n");
 	pruebas_primitivas_abb();
 
-	//printf("\nPRUEBAS ITERADOR EXTERNO:\n");
-	//pruebas_iterador_externo();
+	printf("\nPRUEBAS ITERADOR EXTERNO:\n");
+	pruebas_iterador_externo();
 
 	printf("\nPRUEBAS ITERADOR INTERNO:\n");
 	pruebas_iterador_interno();
