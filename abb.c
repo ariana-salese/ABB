@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <stdio.h> //Para imprimir, se puede sacar
-
-#define COMPACT //Para imprimir, se puede sacar
 
 typedef struct abb_nodo {
     struct abb_nodo* der;
@@ -35,131 +32,49 @@ typedef enum cantidad_hijos {
     CERO_HIJOS, UN_HIJO, DOS_HIJOS
 } cantidad_hijos_t;
 
-
-/* ******************************************************************
- *                 IMPRIMIR ARBOL (BORRAR AL FINAL)
- * *****************************************************************/
-
-size_t _abb_altura(abb_nodo_t *nodo, size_t altura) { //Es para saber hasta donde imprimir
-
-    if(!nodo) return altura;
-    
-    size_t alt_izq = _abb_altura(nodo->izq, altura + 1);
-    size_t alt_der = _abb_altura(nodo->der, altura + 1);
-    
-    return alt_izq > alt_der ? alt_izq : alt_der;
-}
-
-size_t abb_altura(const abb_t* abb) {
-    return _abb_altura(abb->raiz,0);
-}
-
-int _print_t(abb_nodo_t *nodo, int is_izq, int offset, int depth, char s[20][255]) {
-    char b[20];
-    int width = 5;
-
-    if (!nodo) return 0;
-
-    sprintf(b, "(%03d)", *((int*)nodo->dato));
-
-    int izq  = _print_t(nodo->izq,  1, offset,             depth + 1, s);
-    int der = _print_t(nodo->der, 0, offset + izq + width, depth + 1, s);
-
-#ifdef COMPACT
-    for (int i = 0; i < width; i++)
-        s[depth][offset + izq + i] = b[i];
-
-    if (depth && is_izq) {
-
-        for (int i = 0; i < width + der; i++)
-            s[depth - 1][offset + izq + width/2 + i] = '-';
-
-        s[depth - 1][offset + izq + width/2] = '.';
-
-    } else if (depth && !is_izq) {
-
-        for (int i = 0; i < izq + width; i++)
-            s[depth - 1][offset - width/2 + i] = '-';
-
-        s[depth - 1][offset + izq + width/2] = '.';
-    }
-#else
-    for (int i = 0; i < width; i++)
-        s[2 * depth][offset + izq + i] = b[i];
-
-    if (depth && is_izq) {
-
-        for (int i = 0; i < width + der; i++)
-            s[2 * depth - 1][offset + izq + width/2 + i] = '-';
-
-        s[2 * depth - 1][offset + izq + width/2] = '+';
-        s[2 * depth - 1][offset + izq + width + der + width/2] = '+';
-
-    } else if (depth && !is_izq) {
-
-        for (int i = 0; i < izq + width; i++)
-            s[2 * depth - 1][offset - width/2 + i] = '-';
-
-        s[2 * depth - 1][offset + izq + width/2] = '+';
-        s[2 * depth - 1][offset - width/2 - 1] = '+';
-    }
-#endif
-
-    return izq + width + der;
-}
-
-void print_t(abb_nodo_t *nodo) {
-    char s[20][255];
-    for (int i = 0; i < _abb_altura(nodo,0) + 2; i++)
-        sprintf(s[i], "%80s", " ");
-
-    _print_t(nodo, 0, 0, 0, s);
-
-    for (int i = 0; i < _abb_altura(nodo,0) + 2; i++)
-        printf("%s\n", s[i]);
-}
-
-void imprimir_abb(abb_t *arbol) {
-	print_t(arbol->raiz);
-}
-
 /* ******************************************************************
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
 
+//Devuelve la cantidad de hijos del nodo pasado por parametro. 
 size_t contar_hijos(abb_nodo_t* nodo) {
     if (!nodo->der && !nodo->izq) return CERO_HIJOS;
     if (nodo->der && nodo->izq) return DOS_HIJOS;
     return UN_HIJO;
 }
 
+//Recibe por parametro un nodo con uno o cero hijos. Devuelve el unico hijo del nodo o
+//NULL si tiene cero hijos. 
 abb_nodo_t* buscar_hijo_unico(abb_nodo_t* nodo) {
     if (nodo->der) return nodo->der;
     if (nodo->izq) return nodo->izq;
     return NULL;
 }
 
+//Busca un reemplazo del nodo. Si tiene hijo derecho, devuelve el menor a su derecha, 
+//caso contrario, el mayor a su izquierda. 
 abb_nodo_t* buscar_reemplazo(abb_nodo_t* nodo) {
     abb_nodo_t* nodo_act;
-    if(nodo->der){
+    if (nodo->der) {
         nodo_act = nodo->der;
         while (nodo_act->izq) nodo_act = nodo_act->izq;
-    }
-    else{
+    } else {
         nodo_act = nodo->izq;
         while (nodo_act->der) nodo_act = nodo_act->der;
     }
     return nodo_act;
 }
 
+//Destruye el nodo pasado por parametro.
+//Post: todos sus datos asociados fueron liberados 
 void abb_nodo_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, accion_t borrar) {
     if (destruir_dato && borrar) destruir_dato(nodo->dato);
     free(nodo->clave);
     free(nodo);
 }
 
+//Destruye cada uno de los nodos del arbol
 void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *arbol) {
-	
 	if (!nodo) return;
 
 	_abb_destruir(nodo->izq, destruir_dato, arbol);
@@ -168,6 +83,7 @@ void _abb_destruir(abb_nodo_t* nodo, abb_destruir_dato_t destruir_dato, abb_t *a
     abb_nodo_destruir(nodo, destruir_dato, BORRAR);
 }
 
+//Crea un nodo para el abb. 
 abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     abb_nodo_t* abb_nodo = malloc(sizeof(abb_nodo_t));
     if (!abb_nodo) return NULL;
@@ -186,13 +102,20 @@ abb_nodo_t* abb_nodo_crear(const char* clave, void* dato) {
     return abb_nodo;
 }
 
+//Busca un nodo cuya clave coincide con la pasada por parametro. Si la clave no se encuentra devuelve
+//NULL. Si se pasa por parametro BORRAR, el nodo buscado se elimina.
+//Post: la condicion de abb se sigue cumpliendo. 
 abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo_t* nodo_ant, const char* clave, accion_t borrar) {
     if (!nodo_act) return NULL;
 
     int resultado_cmp_act = cmp(nodo_act->clave, clave);
 
-    if (resultado_cmp_act > 0) return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
-    else if (resultado_cmp_act < 0) return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
+    if (resultado_cmp_act > 0) {
+        return buscar_nodo (cmp, nodo_act->izq, nodo_act, clave, borrar);
+    }
+    else if (resultado_cmp_act < 0) {
+        return buscar_nodo (cmp, nodo_act->der, nodo_act, clave, borrar);
+    }
     
     if (!borrar) return nodo_act;
 
@@ -224,6 +147,8 @@ abb_nodo_t* buscar_nodo(abb_comparar_clave_t cmp, abb_nodo_t* nodo_act, abb_nodo
     return nodo_a_devolver;
 }
 
+// Ubica el nuevo nodo cumpliendo con la condicion de abb. En caso de ya encontrarse la clave del 
+// nuevo nodo, reemplaza su dato. 
 void ubicar_nodo(abb_t* arbol, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_nodo_t* nodo_nuevo) {
     if (!nodo_act) {
         if (arbol->cmp(nodo_nuevo->clave, nodo_ant->clave) > 0) nodo_ant->der = nodo_nuevo;      
@@ -238,13 +163,25 @@ void ubicar_nodo(abb_t* arbol, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_n
     else if (resultado_cmp < 0) {
     	ubicar_nodo(arbol, nodo_act, nodo_act->izq, nodo_nuevo); //actual < nueva
     } 
-    else { //act == nueva
+    else { //actual == nueva
         if (arbol->destruir_dato) arbol->destruir_dato(nodo_act->dato);
         nodo_act->dato = nodo_nuevo->dato;
         abb_nodo_destruir(nodo_nuevo, arbol->destruir_dato, NO_BORRAR);
         arbol->cantidad--;
         return;
     }
+}
+
+//Completa la cola recibida por parametro, si claves es true, con las claves de los nodos
+//del arbol. Si claves es false, encola los nodos.
+void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo, bool claves) {
+	
+	if (!nodo) return;
+
+	poblar_cola_iter(cola, nodo->izq, claves);
+	if (claves) cola_encolar(cola, nodo->clave);
+    else cola_encolar(cola, nodo);
+	poblar_cola_iter(cola, nodo->der, claves);
 }
 
 /* ******************************************************************
@@ -281,8 +218,11 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
 void *abb_borrar(abb_t *arbol, const char *clave) {
     abb_nodo_t* nodo_a_eliminar = NULL;
 
-    if (arbol->cantidad == 1 && arbol->cmp(arbol->raiz->clave, clave) == 0) nodo_a_eliminar = arbol->raiz;
-    else nodo_a_eliminar = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, BORRAR);
+    if (arbol->cantidad == 1 && arbol->cmp(arbol->raiz->clave, clave) == 0) {
+        nodo_a_eliminar = arbol->raiz;
+    } else {
+        nodo_a_eliminar = buscar_nodo(arbol->cmp, arbol->raiz, NULL, clave, BORRAR);
+    }
     
     if (!nodo_a_eliminar) return NULL;
     
@@ -322,15 +262,6 @@ void abb_destruir(abb_t *arbol) {
  *                   PRIMITIVAS DEL ITERADOR EXTERNO
  * *****************************************************************/
 
-void poblar_cola_iter_externo(cola_t* cola, abb_nodo_t* nodo){
-	
-	if (!nodo) return;
-
-	poblar_cola_iter_externo(cola, nodo->izq);
-	cola_encolar(cola, nodo->clave);
-	poblar_cola_iter_externo(cola, nodo->der);
-}
-
 abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 	abb_iter_t *iter = malloc(sizeof(abb_iter_t));
 
@@ -344,7 +275,7 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 	}
 
 	iter->arbol = arbol;
-	poblar_cola_iter_externo(iter->cola, arbol->raiz);
+	poblar_cola_iter(iter->cola, arbol->raiz, true);
 
 	return iter;
 }
@@ -374,26 +305,6 @@ void abb_iter_in_destruir(abb_iter_t* iter) {
  *                   DECLARACION ITERADOR INTERNO
  * *****************************************************************/
 
-/* hice otro para no modificar lo que habias hecho */
-void poblar_cola_iter_interno(cola_t* nodos, abb_nodo_t* nodo) {
-    if (!nodo) return;
-
-    poblar_cola_iter_interno(nodos, nodo->izq);
-	cola_encolar(nodos, nodo);
-	poblar_cola_iter_interno(nodos, nodo->der);
-}
-
-/* este podria ser uno generico */
-// void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo, bool claves) {
-	
-// 	if (!nodo) return;
-
-// 	poblar_cola_iter_externo(cola, nodo->izq);
-// 	if (claves) cola_encolar(cola, nodo->clave);
-//     else cola_encolar(cola, nodo);
-// 	poblar_cola_iter_externo(cola, nodo->der);
-// }
-
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra) {
 
     if (!arbol->raiz) return;
@@ -401,10 +312,10 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
     cola_t* nodos = cola_crear();
     if (!nodos) return; 
 
-    poblar_cola_iter_interno(nodos, arbol->raiz);
+    poblar_cola_iter(nodos, arbol->raiz, false);
 
     while (!cola_esta_vacia(nodos)) {
-        abb_nodo_t* nodo_act = (abb_nodo_t*)cola_desencolar(nodos); //no se si es necesario (abb_nodo_t*)
+        abb_nodo_t* nodo_act = (abb_nodo_t*)cola_desencolar(nodos); 
         if (!visitar(nodo_act->clave, nodo_act->dato, extra)) break;
     }
 
