@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "abb.h"
-#include "cola.h"
+#include "pila.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -21,9 +21,8 @@ struct abb {
 
 struct abb_iter {
     const abb_t* arbol;
-    cola_t* cola;
+    pila_t* pila;
 };
-
 typedef enum accion {
     NO_BORRAR, BORRAR
 } accion_t;
@@ -172,16 +171,14 @@ void ubicar_nodo(abb_t* arbol, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_n
     }
 }
 
-//Completa la cola recibida por parametro, si claves es true, con las claves de los nodos
-//del arbol. Si claves es false, encola los nodos.
-void poblar_cola_iter(cola_t* cola, abb_nodo_t* nodo, bool claves) {
-	
-	if (!nodo) return;
+//Completa la pila recibida por parametro con los nodos a la izquierda del actual.
+void poblar_pila_iter(pila_t* pila, abb_nodo_t* nodo) {
 
-	poblar_cola_iter(cola, nodo->izq, claves);
-	if (claves) cola_encolar(cola, nodo->clave);
-    else cola_encolar(cola, nodo);
-	poblar_cola_iter(cola, nodo->der, claves);
+	if(!nodo) return;
+
+	pila_apilar(pila, nodo);
+
+	poblar_pila_iter(pila, nodo->izq);
 }
 
 /* ******************************************************************
@@ -267,40 +264,42 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol) {
 
 	if (!iter) return NULL;
 
-	iter->cola = cola_crear();
+	iter->pila = pila_crear();
 
-	if (!iter->cola) {
+	if (!iter->pila) {
 		free(iter);
 		return NULL;
 	}
 
 	iter->arbol = arbol;
-	poblar_cola_iter(iter->cola, arbol->raiz, true);
+	poblar_pila_iter(iter->pila, arbol->raiz);
 
 	return iter;
 }
 
 bool abb_iter_in_avanzar(abb_iter_t *iter) {
-	if (cola_esta_vacia(iter->cola)) return false;
+	if (pila_esta_vacia(iter->pila)) return false;
 
-	cola_desencolar(iter->cola);
+	abb_nodo_t* nodo_act = pila_desapilar(iter->pila);
+
+	poblar_pila_iter(iter->pila, nodo_act->der);
+
 	return true;
 }
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter) {
 	if (abb_iter_in_al_final(iter)) return NULL;
-	return cola_ver_primero(iter->cola);
+	return ((abb_nodo_t*) pila_ver_tope(iter->pila))->clave;
 }
 
 bool abb_iter_in_al_final(const abb_iter_t *iter) {
-	return cola_esta_vacia(iter->cola);
+	return pila_esta_vacia(iter->pila);
 }
 
 void abb_iter_in_destruir(abb_iter_t* iter) {
-	cola_destruir(iter->cola, NULL);
+	pila_destruir(iter->pila);
 	free(iter);
 }
-
 /* *****************************************************************
  *                   DECLARACION ITERADOR INTERNO
  * *****************************************************************/
@@ -309,15 +308,16 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
 
     if (!arbol->raiz) return;
 	
-    cola_t* nodos = cola_crear();
-    if (!nodos) return; 
+    pila_t* pila = pila_crear();
+    if (!pila) return; 
 
-    poblar_cola_iter(nodos, arbol->raiz, false);
+    poblar_pila_iter(pila, arbol->raiz);
 
-    while (!cola_esta_vacia(nodos)) {
-        abb_nodo_t* nodo_act = (abb_nodo_t*)cola_desencolar(nodos); 
+    while (!pila_esta_vacia(pila)) {
+        abb_nodo_t* nodo_act = (abb_nodo_t*)pila_desapilar(pila); 
         if (!visitar(nodo_act->clave, nodo_act->dato, extra)) break;
+        poblar_pila_iter(pila, nodo_act->der);
     }
 
-    cola_destruir(nodos, NULL);
+    pila_destruir(pila);
 }
