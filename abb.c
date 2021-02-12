@@ -174,7 +174,7 @@ void ubicar_nodo(abb_t* arbol, abb_nodo_t* nodo_ant, abb_nodo_t* nodo_act, abb_n
 //Completa la pila recibida por parametro con los nodos a la izquierda del actual.
 void poblar_pila_iter(pila_t* pila, abb_nodo_t* nodo) {
 
-	if(!nodo) return;
+	if (!nodo) return;
 
 	pila_apilar(pila, nodo);
 
