@@ -660,7 +660,11 @@ void pruebas_abb_estudiante() {
 	pruebas_iterador_interno();
 }
 
+#ifndef CORRECTOR
+
 int main(void) {
     pruebas_abb_estudiante();
     return failure_count() > 0;
 }
+
+#endif
