@@ -273,7 +273,7 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 	hash_t* elem_pertenecen = hash_crear(NULL);
 
 	char* claves[cantidad_elementos];
-	int valores[cantidad_elementos];
+	size_t valores[cantidad_elementos];
 	int max = 3;
 
 	abb_t* arbol = abb_crear(strcmp, NULL);
@@ -291,7 +291,7 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 
 	for (size_t i = 0; i < cantidad_elementos;) {
 		valores[i] = rand() % (cantidad_elementos * max);
-	 	sprintf(claves[i], "%d", valores[i]);
+	 	sprintf(claves[i], "%zu", valores[i]);
 
 		if (hash_pertenece(elem_pertenecen, claves[i])) continue;
 
@@ -314,7 +314,7 @@ void _prueba_abb_volumen(size_t cantidad_elementos, size_t cantidad_digitos) {
 	
 	//REEMPLAZA ELEMENTOS
 	hash_iter_t* iter_reemplazar = hash_iter_crear(elem_pertenecen);
-	int reemplazos[cantidad_elementos / 2];
+	size_t reemplazos[cantidad_elementos / 2];
 	char* claves_modificadas[cantidad_elementos / 2];
 
 	/* pruebas */
@@ -456,7 +456,7 @@ static void _prueba_abb_iterar_ext_volumen(size_t cantidad_elementos, size_t can
 	hash_t* elem_pertenecen = hash_crear(NULL);
 
 	char* claves[cantidad_elementos];
-	int valores[cantidad_elementos];
+	size_t valores[cantidad_elementos];
 	int max = 3;
 
 	abb_t* arbol = abb_crear(strcmp, NULL);
@@ -469,7 +469,7 @@ static void _prueba_abb_iterar_ext_volumen(size_t cantidad_elementos, size_t can
 
 	for (size_t i = 0; i < cantidad_elementos;) {
 		valores[i] = rand() % (cantidad_elementos * max);
-	 	sprintf(claves[i], "%d", valores[i]);
+	 	sprintf(claves[i], "%zu", valores[i]);
 
 		if (hash_pertenece(elem_pertenecen, claves[i])) continue;
 
@@ -660,11 +660,7 @@ void pruebas_abb_estudiante() {
 	pruebas_iterador_interno();
 }
 
-//#ifndef CORRECTOR
-
 int main(void) {
     pruebas_abb_estudiante();
     return failure_count() > 0;
 }
-
-//#endif
